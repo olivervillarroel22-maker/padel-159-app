@@ -1,11 +1,55 @@
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app
+from firebase_admin import credentials, firestore, initialize_app # Mantienes tus imports
 from datetime import datetime, time, timedelta
 import time as t
 import pandas as pd
 import os
 
+# ------------------------------------------------------------------
+# ✅ PEGA AQUÍ EL CÓDIGO CORREGIDO 
+# ------------------------------------------------------------------
+
+# Función para inicializar Firebase (solo si no está inicializado)
+def initialize_firebase():
+    """
+    Carga las credenciales del st.secrets y inicializa la app de Firebase.
+    """
+    # Verifica si Firebase ya ha sido inicializado.
+    if not firebase_admin._apps:
+        # Nota: La línea siguiente st.info es para Streamlit, puedes usarla o quitarla
+        st.info("Inicializando Firebase...") 
+        try:
+            # --- Punto clave: Accede al DICCIONARIO anidado ---
+            key_dict = st.secrets["firebase"]["service_account_key"] 
+            
+            # Crea el objeto de credenciales de Firebase a partir del DICCIONARIO.
+            # Nota: Asegúrate de que importaste 'credentials'
+            cred = credentials.Certificate(key_dict)
+            
+            # Inicializa la aplicación.
+            firebase_admin.initialize_app(cred, name="padel-app")
+            
+            st.success("✅ Conexión a Firebase establecida con éxito.")
+        
+        except Exception as e:
+            # Muestra un error crítico y detiene la aplicación si falla la conexión
+            st.error(f"❌ Error CRÍTICO al inicializar Firebase. Revisa tus credenciales en 'Secrets'. Detalles: {e}")
+            st.stop()
+    else:
+        # La aplicación ya está inicializada, no hacemos nada
+        pass
+
+# 2. Llama a la función de inicialización
+initialize_firebase()
+
+# 3. Define la referencia a la base de datos para usarla en el resto de tu app:
+#    Puedes comentar esta línea si no necesitas Firestore inmediatamente.
+# db = firestore.client(app=firebase_admin.get_app("padel-app"))
+
+# ------------------------------------------------------------------
+# Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
+# ------------------------------------------------------------------
 # =========================================================================
 # SECCIÓN 1: CONFIGURACIÓN Y CONEXIÓN A FIREBASE
 # =========================================================================
@@ -1356,3 +1400,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
