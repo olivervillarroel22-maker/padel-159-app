@@ -1,9 +1,8 @@
-﻿import streamlit as st
+import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore
-from datetime import datetime, time, timedelta 
-import time as t 
-
+from firebase_admin import credentials, firestore, initialize_app
+from datetime import datetime, time, timedelta
+import time as t
 import pandas as pd
 import os
 
@@ -16,7 +15,7 @@ st.set_page_config(
     page_title="App Cierre de Caja",
     page_icon="💵",
     layout="wide",
-    initial_sidebar_state="collapsed" 
+    initial_sidebar_state="collapsed"
 )
 
 # 🎨 PALETA DE COLORES OPTIMIZADA (Azul Marino y Teal/Verde)
@@ -74,43 +73,19 @@ st.markdown(f"""
 COLLECTION_NAME_USERS = "usuarios"
 COLLECTION_NAME_CIERRES = "cierres_caja"
 COLLECTION_NAME_TASAS = "tasas_cambio"
-COLLECTION_NAME_TRANSACCIONES_CANCHAS = "transacciones_canchas" 
-CASH_DENOMINATIONS_BS = [10, 20, 50, 100, 200, 500] 
+COLLECTION_NAME_TRANSACCIONES_CANCHAS = "transacciones_canchas"
+CASH_DENOMINATIONS_BS = [10, 20, 50, 100, 200, 500]
 CASH_DENOMINATIONS_USD = [1, 5, 10, 20, 50, 100]
-AVAILABLE_CAJAS = ["Canchas Padel (Incluye Tienda)", "Cafe Bar"] 
+AVAILABLE_CAJAS = ["Canchas Padel (Incluye Tienda)", "Cafe Bar"]
 TIPOS_TRANSACCION_CANCHA = ["Alquiler Normal", "Crédito (por Suspensión)", "Cobro de Crédito Pendiente", "Pago Adelantado"]
-AVAILABLE_CANCHAS = ["Cancha 1", "Cancha 2", "Cancha 3", "Cancha 4"] 
-METODOS_PAGO_CANCHAS = ["Punto de Venta/Débito (Bs)", "Pago Móvil (Bs)", "Efectivo (USD)", "Zelle (USD)", "Venmo (USD)"] 
+AVAILABLE_CANCHAS = ["Cancha 1", "Cancha 2", "Cancha 3", "Cancha 4"]
+METODOS_PAGO_CANCHAS = ["Punto de Venta/Débito (Bs)", "Pago Móvil (Bs)", "Efectivo (USD)", "Zelle (USD)", "Venmo (USD)"]
 
-# --- Rutas de Archivos Locales ---
-# (Asegúrate de que esta ruta sea correcta en tu entorno: D:\PadelApp\images\logo.png)
-LOGO_PATH = r'D:\PadelApp\images\logo.png' 
+# --- Rutas de Archivos (Corregida para despliegue en nube) ---
+# Asegúrate de que 'logo.png' esté en la raíz de tu repositorio
+LOGO_PATH = 'logo.png' 
 
-# --- Inicialización de Firebase (Adaptado y Robusto contra Fallos) ---
-def init_firebase():
-    if not firebase_admin._apps:
-        try:
-            JSON_PATH = './serviceAccountKey.json' 
-            
-            if not os.path.exists(JSON_PATH):
-                 st.error(f"FATAL: No se encontró el archivo de credenciales JSON en: {JSON_PATH}")
-                 st.warning("Verifica la ruta. La aplicación no podrá usar la base de datos.")
-                 return None 
-                 
-import streamlit as st
-import time as t
-from firebase_admin import credentials, firestore, initialize_app
-import firebase_admin # Asegúrate de que esta línea esté, si no, añádela
-# [AQUÍ IRÍAN OTRAS IMPORTACIONES COMO PANDAS O MATH]
-
-# =========================================================================
-# SECCIÓN 1: CONFIGURACIÓN Y CONEXIÓN DE FIREBASE (MODIFICADA PARA NUBE)
-# =========================================================================
-
-# --- CONSTANTES DE FIREBASE ---
-COLLECTION_NAME_USERS = 'usuarios'
-# [AQUÍ DEBEN IR OTRAS CONSTANTES DE TU CÓDIGO]
-
+# --- Inicialización de Firebase (Versión para Streamlit Cloud) ---
 def init_firebase():
     """
     Inicializa Firebase de forma segura usando st.secrets para el despliegue en Streamlit Cloud.
@@ -128,7 +103,7 @@ def init_firebase():
             # 3. INICIALIZA LA APLICACIÓN
             initialize_app(cred)
             
-            st.info("Conexión segura a Firebase establecida con Secrets.")
+            # st.info("Conexión segura a Firebase establecida con Secrets.") # Opcional: puede ser ruidoso
             
         except Exception as e:
             st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
@@ -189,9 +164,6 @@ def logout():
     t.sleep(0.5) 
     st.rerun()
 
-# =========================================================================
-# [AQUÍ CONTINUARÍA EL RESTO DE TU CÓDIGO (SECCIÓN 3, 4, 5, etc.)]
-# =========================================================================
 # =========================================================================
 # SECCIÓN 3: LÓGICA DE NEGOCIO (FUNCIONES DE CIERRE, REPORTE Y CANCHAS)
 # =========================================================================
@@ -750,7 +722,7 @@ def canchas_interface(db):
             elif monto_usd <= 0:
                 st.error("El monto debe ser mayor a cero.")
             elif cancha_name == "N/A" and tipo_transaccion == "Alquiler Normal":
-                 st.error("Debe seleccionar una cancha para un 'Alquiler Normal'.")
+                   st.error("Debe seleccionar una cancha para un 'Alquiler Normal'.")
             else:
                 transaction_data = {
                     'tipo_transaccion': tipo_transaccion,
@@ -1009,8 +981,8 @@ def cierre_caja_interface(db, tasa_bs):
 
             # Nota específica para la Tienda (se mantiene manual)
             form_data['notas_tienda'] = st.text_area(
-                 "Notas de la Tienda (Ej: Detalle de Venta de Pelotas y Bebidas):", 
-                 key="notas_tienda"
+                "Notas de la Tienda (Ej: Detalle de Venta de Pelotas y Bebidas):", 
+                key="notas_tienda"
              )
         else:
             # Si es Café Bar, se inicializan a 0.0 y "" y se ocultan los campos.
@@ -1140,7 +1112,7 @@ def kpi_dashboard_interface(db):
     
     st.dataframe(
         display_kpis.rename(columns={'promedio_error_abs': 'Error Promedio (ABS)', 
-                                     'promedio_diferencia': 'Diferencia Neta Promedio'}),
+                                    'promedio_diferencia': 'Diferencia Neta Promedio'}),
         use_container_width=True
     )
     st.caption("Nota: El 'Error Promedio (ABS)' mide la precisión sin importar si el error es a favor o en contra de la empresa.")
@@ -1187,7 +1159,7 @@ def user_management_interface(db):
         
         col3, col4, col5 = st.columns(3)
         username = col3.text_input("Username (Único)", value=st.session_state.edit_user_data.get('username', ''), 
-                                  disabled=(mode == "Edición"), help="No se puede cambiar en modo edición.")
+                                    disabled=(mode == "Edición"), help="No se puede cambiar en modo edición.")
         pin = col4.text_input("PIN (5 Dígitos)", type="password", max_chars=5, value=st.session_state.edit_user_data.get('pin', ''))
         
         available_roles = ["cajera", "supervisora", "administrador", "programador"]
@@ -1273,7 +1245,7 @@ def user_management_interface(db):
              st.caption(f"El usuario '{username_to_act}' no fue encontrado.")
 
 # =========================================================================
-# SECCIÓN 6: FUNCIÓN PRINCIPAL (MAIN) - MODIFICADA
+# SECCIÓN 6: FUNCIÓN PRINCIPAL (MAIN)
 # =========================================================================
 
 def main():
@@ -1284,12 +1256,12 @@ def main():
         st.session_state.user_role = None
 
     # 💡 Manejo de Fallo de Conexión a DB
-    global db
+    # db se inicializa globalmente después de init_firebase()
     if db is None:
         st.title("💸 Cierre de Caja App")
         st.error("⚠️ La aplicación **no puede funcionar**: Falló la conexión a la base de datos (Firebase).")
-        st.warning("Por favor, revisa tu archivo `serviceAccountKey.json` y los mensajes de error en la terminal.")
-        return 
+        st.warning("Por favor, revisa tus 'Secrets' en Streamlit Cloud y los mensajes de error.")
+        st.stop() # Detiene la ejecución
 
     # --- BARRA LATERAL (Logo y Datos del Usuario) ---
     if os.path.exists(LOGO_PATH):
@@ -1298,7 +1270,8 @@ def main():
         except Exception as e:
             st.sidebar.error(f"Error al cargar el logo: {e}")
     else:
-        st.sidebar.warning(f"No se encontró el archivo logo.png en la ruta: {LOGO_PATH}")
+        # Mensaje de advertencia actualizado para la ruta relativa
+        st.sidebar.warning(f"No se encontró el archivo logo.png en la raíz del repositorio.")
 
 
     username_display = st.session_state.username if st.session_state.username else 'Invitado'
