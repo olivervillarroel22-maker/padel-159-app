@@ -1,26 +1,23 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-# ¡Importa la librería json!
-import json 
-# ... el resto de tus importaciones (datetime, time, pandas, os)
+# Ya no necesitamos 'import json'
+# ... el resto de tus importaciones 
 
-# Función para inicializar Firebase (solución robusta)
+# Función para inicializar Firebase (solución robusta y nativa de Streamlit)
 def initialize_firebase():
     """
-    Carga las credenciales del st.secrets, asegura que sean un JSON válido
+    Carga las credenciales del st.secrets, las convierte a un diccionario nativo
     y inicializa la app de Firebase.
     """
     if not firebase_admin._apps:
-        st.info("Intentando la conexión robusta a Firebase...")
+        st.info("Intentando la conexión definitiva a Firebase...")
         try:
-            # 1. Obtiene el diccionario de credenciales del secrets.toml
-            cred_dict = st.secrets["firebase"]["service_account_key"] 
+            # 1. Obtiene el objeto AttrDict
+            cred_attr_dict = st.secrets["firebase"]["service_account_key"]
             
-            # 2. **PASO CRÍTICO DE CORRECCIÓN:** # Convierte el diccionario a una cadena JSON y luego la vuelve a cargar.
-            # Esto fuerza a Python a interpretar correctamente los caracteres de salto de línea (\n).
-            json_cred = json.dumps(cred_dict)
-            key_dict = json.loads(json_cred) # ¡Esto garantiza un diccionario limpio!
+            # 2. **PASO CRÍTICO DE CORRECCIÓN:** # Convierte el objeto especial (AttrDict) a un diccionario nativo de Python (dict)
+            key_dict = dict(cred_attr_dict)
 
             # 3. Inicializa el certificado con el diccionario limpio.
             cred = credentials.Certificate(key_dict)
@@ -32,14 +29,15 @@ def initialize_firebase():
         
         except Exception as e:
             # Muestra el error y detiene la ejecución
-            st.error(f"❌ Error CRÍTICO y persistente en Firebase. Detalles: {e}")
+            st.error(f"❌ Error CRÍTICO final al inicializar Firebase. Detalles: {e}")
+            # Puedes comentar la línea st.stop() temporalmente si quieres ver otros errores
             st.stop()
     else:
         pass
 
 # 2. Llama a la función de inicialización
 initialize_firebase()
-
+# ... tu código Streamlit continúa ...
 # ------------------------------------------------------------------
 # Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
 # ------------------------------------------------------------------
@@ -1393,6 +1391,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
