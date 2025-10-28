@@ -46,6 +46,7 @@ def init_firebase():
         # Esto atrapará errores de clave faltante o credenciales inválidas
         st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
         return None # Devuelve None si falla
+        db = init_firebase_connection()
 # =========================================================================
 # SECCIÓN 1: CONFIGURACIÓN Y CONEXIÓN A FIREBASE
 # =========================================================================
@@ -1396,6 +1397,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
