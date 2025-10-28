@@ -1,44 +1,33 @@
-import json 
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
 # Ya no necesitamos 'import json'
 # ... el resto de tus importaciones 
 
-# ALTERNATIVA MÁS ROBUSTA PARA LEER EL SECRETO (SI FALLA LA ANTERIOR)
+
+# Llama a la función
 def init_firebase():
     """
-    Función correcta que usa json.loads() para parsear la string multilínea
-    del secreto antes de inicializar Firebase.
+    Inicializa Firebase leyendo directamente los campos del secreto TOML.
     """
     if not firebase_admin._apps:
         try:
-            # 1. LEE LA CLAVE ESPECÍFICA (service_account_key) COMO STRING
-            # (No todo el bloque [firebase])
-            cred_string = st.secrets["firebase"]["service_account_key"]
+            # LEE TODO EL BLOQUE [service_account] COMO UN DICCIONARIO
+            cred_data = st.secrets["service_account"] 
             
-            # 2. CONVIERTE LA CADENA DE TEXTO (STRING) EN UN DICCIONARIO PYTHON (JSON)
-            cred_dict = json.loads(cred_string) # <-- ESTE PASO ES VITAL
+            # Firebase lee el certificado directamente desde este diccionario
+            cred = credentials.Certificate(cred_data) 
             
-            # 3. CREA LAS CREDENCIALES A PARTIR DEL DICCIONARIO
-            cred = credentials.Certificate(cred_dict) 
-            
-            # 4. INICIALIZA LA APLICACIÓN
             initialize_app(cred)
-            
             st.info("Conexión segura a Firebase establecida. ¡LISTO!")
             
         except Exception as e:
             st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
-            st.error("Verifica que las credenciales en 'Secrets' de Streamlit Cloud sean correctas.")
+            st.error("Verifica que el formato TOML del secreto sea plano y sin anidación.")
             st.stop()
             return None
             
-    return firestore.client()
-
-# Llama a la función
-db = init_firebase()
-# ------------------------------------------------------------------
+    return firestore.client()# ------------------------------------------------------------------
 # Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
 # ------------------------------------------------------------------
 # =========================================================================
@@ -1391,6 +1380,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
