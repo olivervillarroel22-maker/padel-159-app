@@ -1,3 +1,4 @@
+import json 
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -6,22 +7,33 @@ from firebase_admin import credentials, firestore
 
 # CÓDIGO CORRECTO DENTRO DE init_firebase():
 def init_firebase():
-    # ... (código de verificación y otros)
+    """
+    Inicializa Firebase de forma segura, parseando el JSON del secreto
+    antes de pasarlo a credentials.Certificate().
+    """
     if not firebase_admin._apps:
         try:
-            # Tu código de conexión (st.secrets)
-            # ...
+            # 1. LEE EL SECRETO COMO CADENA DE TEXTO (STRING)
+            cred_string = st.secrets["firebase"]["service_account_key"]
+            
+            # 2. PARSEA LA CADENA DE TEXTO EN UN DICCIONARIO PYTHON (JSON)
+            cred_dict = json.loads(cred_string)
+            
+            # 3. CREA LAS CREDENCIALES A PARTIR DEL DICCIONARIO
+            cred = credentials.Certificate(cred_dict) # ¡AQUÍ ESTÁ EL CAMBIO!
+            
+            # 4. INICIALIZA LA APLICACIÓN
             initialize_app(cred)
             
             st.info("Conexión segura a Firebase establecida con Secrets.")
             
-        except Exception as e: # <--- ¡ESTA LÍNEA ES CRUCIAL!
+        except Exception as e:
             st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
-            st.error("Verifica que las credenciales... [etc.]")
+            st.error("Verifica que las credenciales en 'Secrets' de Streamlit Cloud sean correctas y que la función 'json.loads()' funcione.")
             st.stop()
-            return None 
+            return None
             
-    return firestore.client() # La línea después del try/except
+    return firestore.client()
 # ------------------------------------------------------------------
 # Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
 # ------------------------------------------------------------------
@@ -1375,6 +1387,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
