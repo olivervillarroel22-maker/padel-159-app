@@ -22,9 +22,6 @@ def init_firebase():
             return None 
             
     return firestore.client() # La línea después del try/except
-# 2. Llama a la función de inicialización
-initialize_firebase()
-# ... tu código Streamlit continúa ...
 # ------------------------------------------------------------------
 # Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
 # ------------------------------------------------------------------
@@ -1378,6 +1375,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
