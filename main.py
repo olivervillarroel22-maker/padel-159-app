@@ -3,7 +3,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # ... (otras constantes y código) ...
-
+init_firebase_connection()
+db = init_firebase_connection()
 @st.cache_resource
 def init_firebase():
     """Inicializa Firebase y devuelve la instancia de Firestore."""
@@ -1395,6 +1396,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
