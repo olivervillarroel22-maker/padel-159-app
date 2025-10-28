@@ -1,35 +1,50 @@
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, firestore
-# Ya no necesitamos 'import json'
-# ... el resto de tus importaciones 
 
+# ... (otras constantes y código) ...
 
-# Llama a la función
+@st.cache_resource
 def init_firebase():
-    """
-    Inicializa Firebase leyendo directamente los campos del secreto TOML.
-    """
-    if not firebase_admin._apps:
-        try:
-            # LEE TODO EL BLOQUE [service_account] COMO UN DICCIONARIO
-            cred_data = st.secrets["service_account"] 
-            
-            # Firebase lee el certificado directamente desde este diccionario
-            cred = credentials.Certificate(cred_data) 
-            
-            initialize_app(cred)
-            st.info("Conexión segura a Firebase establecida. ¡LISTO!")
-            
-        except Exception as e:
-            st.error(f"? Error CRÍTICO al conectar con Firebase: {e}")
-            st.error("Verifica que el formato TOML del secreto sea plano y sin anidación.")
-            st.stop()
-            return None
-            
-    return firestore.client()# ------------------------------------------------------------------
-# Tu código Streamlit continúa aquí con st.title("Mi App de Padel") o similar...
-# ------------------------------------------------------------------
+    """Inicializa Firebase y devuelve la instancia de Firestore."""
+    
+    # 1. Verificar si ya está inicializado para evitar duplicados
+    if firebase_admin._apps:
+        return firestore.client()
+
+    try:
+        # 2. Cargar las credenciales planas directamente desde st.secrets
+        # Creamos un diccionario directamente desde st.secrets.
+        # ESTO ASUME QUE HAS ELIMINADO LA LÍNEA [service_account]
+        # Y USAS EL FORMATO PLANO EN SECRETS.TOML
+        
+        creds_dict = {
+            "type": st.secrets["type"],
+            "project_id": st.secrets["project_id"],
+            "private_key_id": st.secrets["private_key_id"],
+            # Nota: private_key ya está formateada correctamente con \n
+            "private_key": st.secrets["private_key"], 
+            "client_email": st.secrets["client_email"],
+            "client_id": st.secrets["client_id"],
+            "auth_uri": st.secrets["auth_uri"],
+            "token_uri": st.secrets["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": st.secrets["client_x509_cert_url"],
+            "universe_domain": st.secrets["universe_domain"]
+        }
+        
+        # 3. Inicializar el SDK usando el diccionario
+        # `credentials.Certificate()` acepta un diccionario (JSON) o una ruta de archivo.
+        # Al pasar el diccionario, evitamos el error [Errno 2].
+        cred = credentials.Certificate(creds_dict)
+        firebase_admin.initialize_app(cred)
+        
+        return firestore.client()
+        
+    except Exception as e:
+        # Esto atrapará errores de clave faltante o credenciales inválidas
+        st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
+        return None # Devuelve None si falla
 # =========================================================================
 # SECCIÓN 1: CONFIGURACIÓN Y CONEXIÓN A FIREBASE
 # =========================================================================
@@ -1380,6 +1395,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
