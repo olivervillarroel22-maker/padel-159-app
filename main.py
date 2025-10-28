@@ -16,16 +16,16 @@ def init_firebase():
             # 1. LEE EL SECRETO COMO CADENA DE TEXTO (STRING)
             cred_string = st.secrets["firebase"]["service_account_key"]
             
-            # 2. PARSEA LA CADENA DE TEXTO EN UN DICCIONARIO PYTHON (JSON)
+            # 2. PASO CRÍTICO: CONVIERTE LA CADENA DE TEXTO EN UN DICCIONARIO PYTHON
             cred_dict = json.loads(cred_string)
             
             # 3. CREA LAS CREDENCIALES A PARTIR DEL DICCIONARIO
-            cred = credentials.Certificate(cred_dict) # ¡AQUÍ ESTÁ EL CAMBIO!
+            cred = credentials.Certificate(cred_dict) # ¡La librería ya no busca un archivo!
             
             # 4. INICIALIZA LA APLICACIÓN
             initialize_app(cred)
             
-            st.info("Conexión segura a Firebase establecida con Secrets.")
+            st.info("Conexión segura a Firebase establecida. ¡LISTO!")
             
         except Exception as e:
             st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
@@ -1387,6 +1387,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
