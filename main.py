@@ -4,37 +4,24 @@ from firebase_admin import credentials, firestore
 # Ya no necesitamos 'import json'
 # ... el resto de tus importaciones 
 
-# Función para inicializar Firebase (solución robusta y nativa de Streamlit)
-def initialize_firebase():
-    """
-    Carga las credenciales del st.secrets, las convierte a un diccionario nativo
-    y inicializa la app de Firebase.
-    """
+# CÓDIGO CORRECTO DENTRO DE init_firebase():
+def init_firebase():
+    # ... (código de verificación y otros)
     if not firebase_admin._apps:
-        st.info("Intentando la conexión definitiva a Firebase...")
         try:
-            # 1. Obtiene el objeto AttrDict
-            cred_attr_dict = st.secrets["firebase"]["service_account_key"]
+            # Tu código de conexión (st.secrets)
+            # ...
+            initialize_app(cred)
             
-            # 2. **PASO CRÍTICO DE CORRECCIÓN:** # Convierte el objeto especial (AttrDict) a un diccionario nativo de Python (dict)
-            key_dict = dict(cred_attr_dict)
-
-            # 3. Inicializa el certificado con el diccionario limpio.
-            cred = credentials.Certificate(key_dict)
+            st.info("Conexión segura a Firebase establecida con Secrets.")
             
-            # 4. Inicializa la aplicación.
-            firebase_admin.initialize_app(cred, name="padel-app")
-            
-            st.success("🎉 ¡Conexión a Firebase establecida con éxito!")
-        
-        except Exception as e:
-            # Muestra el error y detiene la ejecución
-            st.error(f"❌ Error CRÍTICO final al inicializar Firebase. Detalles: {e}")
-            # Puedes comentar la línea st.stop() temporalmente si quieres ver otros errores
+        except Exception as e: # <--- ¡ESTA LÍNEA ES CRUCIAL!
+            st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
+            st.error("Verifica que las credenciales... [etc.]")
             st.stop()
-    else:
-        pass
-
+            return None 
+            
+    return firestore.client() # La línea después del try/except
 # 2. Llama a la función de inicialización
 initialize_firebase()
 # ... tu código Streamlit continúa ...
@@ -1391,6 +1378,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
