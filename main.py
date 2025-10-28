@@ -8,8 +8,7 @@ from firebase_admin import credentials, firestore
 # CÓDIGO CORRECTO DENTRO DE init_firebase():
 def init_firebase():
     """
-    Inicializa Firebase de forma segura, parseando el JSON del secreto
-    antes de pasarlo a credentials.Certificate().
+    Inicializa Firebase de forma segura, PARSEANDO el JSON del secreto.
     """
     if not firebase_admin._apps:
         try:
@@ -20,7 +19,7 @@ def init_firebase():
             cred_dict = json.loads(cred_string)
             
             # 3. CREA LAS CREDENCIALES A PARTIR DEL DICCIONARIO
-            cred = credentials.Certificate(cred_dict) # ¡La librería ya no busca un archivo!
+            cred = credentials.Certificate(cred_dict) # YA NO ES UNA RUTA DE ARCHIVO
             
             # 4. INICIALIZA LA APLICACIÓN
             initialize_app(cred)
@@ -29,7 +28,7 @@ def init_firebase():
             
         except Exception as e:
             st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
-            st.error("Verifica que las credenciales en 'Secrets' de Streamlit Cloud sean correctas y que la función 'json.loads()' funcione.")
+            st.error("Verifica que las credenciales... ")
             st.stop()
             return None
             
@@ -1387,6 +1386,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
