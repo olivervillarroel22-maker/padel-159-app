@@ -7,6 +7,40 @@ import pandas as pd
 import os
 # No necesitas 'import json' con esta versión
 
+# ... (Código de Configuración y CSS) ...
+
+# --- Rutas de Archivos (Corregida para despliegue en nube) ---
+# Asegúrate de que 'logo.png' esté en la RAÍZ de tu repositorio GitHub
+LOGO_PATH = 'logo.png' 
+
+# --- Inicialización de Firebase (Versión Definitiva para Streamlit Cloud) ---
+def init_firebase():
+    """
+    Inicializa Firebase leyendo directamente los campos del secreto TOML plano.
+    """
+    if not firebase_admin._apps:
+        try:
+            # LEE TODO EL BLOQUE [service_account] COMO UN DICCIONARIO
+            cred_data = st.secrets["service_account"] 
+            
+            # Firebase lee el certificado directamente desde este diccionario
+            cred = credentials.Certificate(cred_data) 
+            
+            firebase_admin.initialize_app(cred) # Usa initialize_app aquí
+            st.info("Conexión segura a Firebase establecida. ¡LISTO!")
+            
+        except Exception as e:
+            st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
+            st.error("Verifica que el formato TOML del secreto sea plano y sin anidación [service_account].")
+            st.stop()
+            return None
+            
+    return firestore.client()
+
+# Llama a la función para inicializar y obtener el cliente de DB
+db = init_firebase()
+
+# ... (Resto de tu código: Secciones 2, 3, 4, 5, 6) ...
 # =========================================================================
 # SECCIÓN 1: CONFIGURACIÓN Y CONEXIÓN A FIREBASE
 # =========================================================================
@@ -1016,3 +1050,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
