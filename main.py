@@ -3,6 +3,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import streamlit as st
 
+# DEBUG (temporal, para verificar formato — elimina después)
+secret_type = type(st.secrets.get("firebase", {}).get("service_account_key"))
+st.write("Tipo de firebase.service_account_key:", secret_type)
+
 @st.cache_resource
 def init_firebase():
     # Evita re-inicializar si ya está
@@ -1131,6 +1135,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
