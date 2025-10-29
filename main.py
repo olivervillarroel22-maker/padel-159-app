@@ -11,31 +11,35 @@ from supabase import create_client, Client
 # CONFIG / CONEXIÓN A SUPABASE
 # =========================================================================
 
-@st.cache_resource
-def init_supabase():
-    """
-    Inicializa y devuelve el cliente Supabase.
-    Configura en Streamlit Secrets (Settings -> Secrets) algo así:
-    [supabase]
-    url = "https://xxxxx.supabase.co"
-    key = "PUBLIC_OR_SERVICE_ROLE_KEY"
-    """
-    supabase_secrets = st.secrets.get("supabase", {})
-    url = supabase_secrets.get("url")
-    key = supabase_secrets.get("key")
-    if not url or not key:
-        st.error("❌ No se encontró la configuración de Supabase en Streamlit Secrets. Añade [supabase] url y key.")
-        st.stop()
-        return None
+def check_login(username, pin):
+    if supabase is None:
+        st.error("DB no conectada.")
+        return False
     try:
-        client: Client = create_client(url, key)
-        return client
-    except Exception as e:
-        st.error(f"❌ Error al inicializar Supabase: {e}")
-        st.stop()
-        return None
+        # DEBUG: consultar por username y mostrar resultado
+        rows = supa_select(COL_USERS, eq_filters={"username": username}, limit=5)
+        st.write("DEBUG: rows fetched by username query:", rows)   # TEMPORAL: borra después
 
-supabase = init_supabase()
+        # filtrar por pin y activo
+        rows_pin = [r for r in rows if str(r.get('pin')) == str(pin) and r.get('activo') == True]
+        st.write("DEBUG: rows matching pin+activo:", rows_pin)     # TEMPORAL
+        if rows_pin:
+            user = rows_pin[0]
+            st.session_state.logged_in = True
+            st.session_state.username = username
+            st.session_state.user_role = user.get('rol', 'cajera')
+            st.session_state.user_name = user.get('nombre', '')
+            st.session_state.user_apellido = user.get('apellido', '')
+            st.success(f"Bienvenido/a, {st.session_state.user_name} ({st.session_state.user_role})")
+            t.sleep(0.8)
+            st.rerun()
+            return True
+        else:
+            st.error("Credenciales inválidas o usuario inactivo.")
+            return False
+    except Exception as e:
+        st.error(f"Error en autenticación: {e}")
+        return False
 
 # =========================================================================
 # CONSTANTES
@@ -353,3 +357,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
