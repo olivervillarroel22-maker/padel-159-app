@@ -10,7 +10,6 @@ from supabase import create_client, Client
 # =========================================================================
 # CONFIG / CONEXIÓN A SUPABASE
 # =========================================================================
-
 def check_login(username, pin):
     if supabase is None:
         st.error("DB no conectada.")
@@ -357,4 +356,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
