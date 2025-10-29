@@ -29,7 +29,7 @@ def init_firebase():
     cred = credentials.Certificate(cred_json)
     firebase_admin.initialize_app(cred)
     return firestore.client()
-    ========================================================
+
 # CONFIGURACIÓN DE LA APP (Streamlit)
 # =========================================================================
 
@@ -1131,5 +1131,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
