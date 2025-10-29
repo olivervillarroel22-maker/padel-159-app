@@ -1,75 +1,35 @@
-# main.py
-# Versión corregida y completa: inicialización Firebase, imports y contenido restaurado
-
-import os
-import time as t
-from datetime import datetime, timedelta, time
-import json
-import pandas as pd
-import streamlit as st
+=import json
 import firebase_admin
 from firebase_admin import credentials, firestore
-
-# =========================================================================
-# INICIALIZACIÓN Y CONEXIONES
-# =========================================================================
+import streamlit as st
 
 @st.cache_resource
 def init_firebase():
-    """
-    Inicializa Firebase y devuelve el cliente de Firestore.
-
-    Requiere que en Streamlit Cloud (Settings -> Secrets) tengas:
-    [firebase.service_account_key]
-    (un table con las mismas keys que el JSON de la service account)
-
-    Ejemplo en Secrets (TOML):
-    [firebase.service_account_key]
-    type = "service_account"
-    project_id = "..."
-    private_key = """-----BEGIN PRIVATE KEY-----
-    MIIE...
-    -----END PRIVATE KEY-----"""
-    client_email = "..."
-    """
-    # Evitar re-inicializar la app Firebase si ya está inicializada
+    # Evita re-inicializar si ya está
     if firebase_admin._apps:
         return firestore.client()
 
-    try:
-        # Leer secret desde Streamlit
-        firebase_secret = st.secrets.get("firebase", {}).get("service_account_key")
-
-        if firebase_secret is None:
-            st.error("❌ No se encontró 'firebase.service_account_key' en Streamlit Secrets. Añádelo en Settings -> Secrets.")
-            st.stop()
-            return None
-
-        # Soportar tanto table/dict como JSON-string
-        if isinstance(firebase_secret, str):
-            try:
-                cred_json = json.loads(firebase_secret)
-            except Exception:
-                st.error("❌ El formato de firebase.service_account_key no parece JSON. Usa un table en Secrets (recomendado).")
-                st.stop()
-                return None
-        else:
-            cred_json = firebase_secret
-
-        # credentials.Certificate acepta dict
-        cred = credentials.Certificate(cred_json)
-
-        # Inicializar la app de Firebase correctamente
-        firebase_admin.initialize_app(cred)
-
-        return firestore.client()
-
-    except Exception as e:
-        st.error(f"❌ Error CRÍTICO al conectar con Firebase: {e}")
+    firebase_secret = st.secrets.get("firebase", {}).get("service_account_key")
+    if firebase_secret is None:
+        st.error("❌ No se encontró 'firebase.service_account_key' en Streamlit Secrets. Añádelo en Settings -> Secrets.")
         st.stop()
         return None
 
-# =========================================================================
+    # Acepta dict (table) o string JSON
+    if isinstance(firebase_secret, str):
+        try:
+            cred_json = json.loads(firebase_secret)
+        except Exception:
+            st.error("❌ El formato de firebase.service_account_key no parece JSON. Usa un table en Secrets (recomendado).")
+            st.stop()
+            return None
+    else:
+        cred_json = firebase_secret
+
+    cred = credentials.Certificate(cred_json)
+    firebase_admin.initialize_app(cred)
+    return firestore.client()
+    ========================================================
 # CONFIGURACIÓN DE LA APP (Streamlit)
 # =========================================================================
 
@@ -1171,3 +1131,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
